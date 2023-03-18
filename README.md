@@ -1,7 +1,16 @@
 # U-Net++
-- [x] DataLoader
-- [ ] Transform
-- [ ] One Traning
-- [ ] One Valid
-- [ ] Wandb
-- [ ] Run Traning
+## TASKS
+###　Dataset
+- [ ] Dataset
+- [ ] DataLoader
+### Preprocessing
+- [ ]  horizontal flips
+- [ ]  vertical flips
+- [ ]  random rescales
+### Traning
+- [ ] Once Traning
+- [ ] Once Validation
+- [ ] Best Model Saving
+- [ ] CheckPoints Saving
+- [ ] Wandb recording
+### Testing

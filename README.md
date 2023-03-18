@@ -1,12 +1,14 @@
 # U-Net++
 ## TASKS
 ### Dataset
-- [ ] Dataset
-- [ ] DataLoader
+- [x] Dataset
+- [x] DataLoader
 ### Preprocessing
-- [ ]  horizontal flips
-- [ ]  vertical flips
-- [ ]  random rescales
+- [ ]  Horizontal Flip
+- [ ]  Vertical Flip
+- [ ]  Random Rescale
+### Model
+- [x] Model Construstion
 ### Traning
 - [ ] Once Traning
 - [ ] Once Validation

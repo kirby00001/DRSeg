@@ -10,7 +10,7 @@
 ### Model
 - [x] Model Construstion
 ### Traning
-- [ ] Once Traning
+- [x] Once Traning
 - [ ] Once Validation
 - [ ] Best Model Saving
 - [ ] CheckPoints Saving

@@ -1,6 +1,5 @@
 import segmentation_models_pytorch as smp
 
-
 def get_unetpp(
     encoder_name,
     encoder_weights,

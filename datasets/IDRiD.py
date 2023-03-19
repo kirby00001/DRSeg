@@ -1,8 +1,7 @@
 import torch
-import numpy as np
 from glob import glob
 from torch.utils.data import Dataset, DataLoader
-from utils.utils import load_image, path2paths, load_mask
+from utils.load import load_image, path2paths, load_mask
 from utils.transform import get_transform
 
 

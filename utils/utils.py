@@ -1,7 +1,7 @@
 import cv2
 import glob
 import numpy as np
-from transform import get_transform
+from .transform import get_transform
 
 
 def load_image(path):

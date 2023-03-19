@@ -4,9 +4,9 @@
 - [x] Dataset
 - [x] DataLoader
 ### Preprocessing
-- [ ]  Horizontal Flip
-- [ ]  Vertical Flip
-- [ ]  Random Rescale
+- [x]  Resize
+- [x]  Horizontal Flip
+- [x]  Vertical Flip
 ### Model
 - [x] Model Construstion
 ### Traning
@@ -14,5 +14,5 @@
 - [ ] Once Validation
 - [ ] Best Model Saving
 - [ ] CheckPoints Saving
-- [ ] Wandb recording
+- [ ] Wandb Recording
 ### Testing

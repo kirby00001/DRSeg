@@ -1,7 +1,7 @@
 import cv2
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
+from transform import get_transform
 
 
 def load_image(path):
@@ -51,3 +51,6 @@ if __name__ == "__main__":
     mask = load_mask(mask_paths)
     print("mask.max", mask.max())
     print("mask.shape", mask.shape)
+    # transform
+    trans = get_transform()
+    print("image.shape after transforms:", trans(img).shape)

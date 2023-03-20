@@ -1,8 +1,10 @@
 import torch
-from glob import glob
 from torch.utils.data import Dataset, DataLoader
-from utils.load import load_image, path2paths, load_mask
+
+from glob import glob
+
 from utils.transform import get_transform
+from utils.load import load_image, path2paths, load_mask
 
 
 class IDRiD(Dataset):
@@ -26,7 +28,7 @@ class IDRiD(Dataset):
         return img, mask
 
 
-def get_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
+def get_train_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
     img_paths = glob(
         "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/*.jpg"
     )
@@ -42,12 +44,30 @@ def get_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
     )
 
 
+def get_valid_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
+    image_paths = glob(
+        "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/*.jpg"
+    )
+    image_paths.sort()
+    # print("image paths:")
+    # for img_path in img_paths:
+    #     print(img_path)
+    dataset = IDRiD(img_paths=image_paths, transform=transform)
+    return DataLoader(
+        dataset=dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+    )
+    
 if __name__ == "__main__":
-    dataloader = get_dataloader_IDRiD(batch_size=1, transform=get_transform())
+    train_dataloader = get_train_dataloader_IDRiD(batch_size=1, transform=get_transform())
+    test_dataloader = get_valid_dataloader_IDRiD(batch_size=1, transform=get_transform())
+    
     # dataloader = get_dataloader_IDRiD(batch_size=1)
-    img, mask = next(iter(dataloader))
-    print("img.max:", img.max())
-    print("img.shape:", img.shape)
+    image, mask = next(iter(test_dataloader))
+    print("img.max:", image.max())
+    print("img.min:", image.min())
+    print("img.shape:", image.shape)
     print("mask.max:", mask.int().max())
     print("mask.min", mask.int().min())
     print("mask.shape:", mask.shape)

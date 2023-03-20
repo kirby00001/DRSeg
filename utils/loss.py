@@ -1,10 +1,13 @@
 from torch.nn import CrossEntropyLoss
 
-def get_loss_CE():
+
+def get_loss_CE(weight=None):
     return CrossEntropyLoss(
-        reduction='sum'
+        weight=weight,
+        reduction="sum",
     )
-    
-if __name__=="__main__":
-    loss=get_loss_CE()
+
+
+if __name__ == "__main__":
+    loss = get_loss_CE()
     print(loss)

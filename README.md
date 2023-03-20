@@ -10,8 +10,9 @@
 ### Model
 - [x] Model Construstion
 ### Traning
-- [x] Once Traning
-- [x] Once Validation
+- [x] One epoch train
+- [x] One epoch valid
+- [x] Run training
 - [ ] Best Model Saving
 - [ ] CheckPoints Saving
 - [ ] Wandb Recording

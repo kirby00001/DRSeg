@@ -46,5 +46,8 @@ if __name__ == "__main__":
     dataloader = get_dataloader_IDRiD(batch_size=1, transform=get_transform())
     # dataloader = get_dataloader_IDRiD(batch_size=1)
     img, mask = next(iter(dataloader))
+    print("img.max:", img.max())
     print("img.shape:", img.shape)
+    print("mask.max:", mask.int().max())
+    print("mask.min", mask.int().min())
     print("mask.shape:", mask.shape)

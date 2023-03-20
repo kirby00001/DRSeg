@@ -1,6 +1,6 @@
 import segmentation_models_pytorch as smp
 
-def get_unetpp(
+def get_model_unetplusplus(
     encoder_name,
     encoder_weights,
     classes=4,
@@ -28,7 +28,7 @@ def get_unetpp(
 
 
 if __name__ == "__main__":
-    model = get_unetpp(
+    model = get_model_unetplusplus(
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
     )

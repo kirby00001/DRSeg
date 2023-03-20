@@ -1,47 +1,91 @@
-import torch
 import gc
+import numpy as np
 from tqdm import tqdm
-from models.unetplusplus import get_unetpp
+from torchinfo import summary
+
+import torch
 from utils.transform import get_transform
 from datasets.IDRiD import get_dataloader_IDRiD
-from torchinfo import summary
+from models.unetplusplus import get_model_unetplusplus
 from utils.loss import get_loss_CE
-from torch.optim import SGD, Adam
+from torch.optim import Adam
+from utils.metrics import mauc_coef, dice_coef, iou_coef
 
 
 def training(model, optimizer, loss_fn, dataloader, device):
     model.to(device)
     model.train()
+    loss = 0
     pbar = tqdm(enumerate(dataloader), total=len(dataloader), desc="Train")
     for step, (images, masks) in pbar:
         images = images.to(device, dtype=torch.float)
         masks = masks.to(device, dtype=torch.float)
         y_pred = model(images)
         loss = loss_fn(y_pred, masks)
-
+        # back propgation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
+        # show loss
         pbar.set_postfix(train_loss=f"{loss:0.4f}")
     # torch.cuda.empty_cache()
     gc.collect()
-    return
+    return loss
+
+@torch.no_grad()
+def validation(model, dataloader, loss_fn, device):
+    model.eval()
+    model.to(device)
+
+    val_scores = []
+    loss = 0
+    pbar = tqdm(enumerate(dataloader), total=len(dataloader), desc="Valid")
+    for step, (images, masks) in pbar:
+        images = images.to(device, dtype=torch.float)
+        masks = masks.to(device, dtype=torch.float)
+        y_pred = model(images)
+        loss = loss_fn(y_pred, masks)
+        mauc = mauc_coef(y_true=masks, y_pred=y_pred)
+        dice = dice_coef(y_true=masks, y_pred=y_pred)
+        iou = iou_coef(y_true=masks, y_pred=y_pred)
+        val_scores.append([mauc, dice, iou])
+        pbar.set_postfix(
+            valid_loss=f"{loss:0.4f}",
+            mauc_coef=f"{mauc:0.4f}",
+            dice_coef=f"{dice:0.4f}",
+            iou_coef=f"{iou:0.4f}",
+        )
+    val_scores = np.mean(val_scores, axis=0)
+    # torch.cuda.empty_cache()
+    gc.collect()
+
+    return loss, val_scores
 
 
 if __name__ == "__main__":
-    model = get_unetpp(
+    model = get_model_unetplusplus(
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
     )
+
     dataloader = get_dataloader_IDRiD(transform=get_transform(resize=True))
-    # image,masks=
+
+    # model summary
     # summary(model, input_size=(1, 3, 480, 720), device="cpu")
+
     optimizer = Adam(model.parameters(), lr=1e-3)
-    training(
+    loss_fn = get_loss_CE()
+    # training(
+    #     model=model,
+    #     optimizer=optimizer,
+    #     loss_fn=loss_fn,
+    #     dataloader=dataloader,
+    #     device="cpu",
+    # )
+    loss, val_socres = validation(
         model=model,
-        optimizer=optimizer,
-        loss_fn=get_loss_CE(),
         dataloader=dataloader,
+        loss_fn=loss_fn,
         device="cpu",
     )
+    print(val_socres)

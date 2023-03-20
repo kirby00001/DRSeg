@@ -28,8 +28,8 @@ def load_mask(paths):
     masks = np.zeros(shape=(2848, 4288, 4))
     for path in paths:
         # print("path2id:",path2id(path))
-        masks[:, :, path2id(path) - 1] = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-    return masks
+        masks[:, :, path2id(path) - 1] = cv2.imread(path,-1)
+    return masks/76
 
 
 if __name__ == "__main__":
@@ -48,5 +48,6 @@ if __name__ == "__main__":
         print(mask_path)
     # load masks
     mask = load_mask(mask_paths)
+    print(mask)
     print("mask.max", mask.max())
     print("mask.shape", mask.shape)

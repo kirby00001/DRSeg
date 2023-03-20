@@ -11,7 +11,7 @@
 - [x] Model Construstion
 ### Traning
 - [x] Once Traning
-- [ ] Once Validation
+- [x] Once Validation
 - [ ] Best Model Saving
 - [ ] CheckPoints Saving
 - [ ] Wandb Recording

@@ -3,19 +3,31 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 
+# def mauc_coef(y_true, y_pred):
+#     H = y_true.shape[-2]
+#     W = y_true.shape[-1]
+#     y_true = y_true.squeeze().int()
+#     y_pred = y_pred.squeeze()
+#     auc = []
+#     for i in range(4):
+#         label = y_true[i].reshape(H * W).cpu().detach().numpy()
+#         pred = y_pred[i].reshape(H * W).cpu().detach().numpy()
+#         if label.max() != 0:
+#             auc.append(
+#                 roc_auc_score(
+#                     y_true=label,
+#                     y_score=pred,
+#                 )
+#             )
+#     mauc = np.mean(auc)
+#     return mauc
+
+
 def mauc_coef(y_true, y_pred):
-    C = y_true.shape[-3]
-    H = y_true.shape[-2]
-    W = y_true.shape[-1]
-    y_true = y_true.squeeze().int()
-    y_pred = y_pred.squeeze()
-    auc = []
-    for i in range(4):
-        label = y_true[i].reshape(H * W)
-        pred = y_pred[i].reshape(H * W)
-        if label.max() != 0:
-            auc.append(roc_auc_score(y_true=label, y_score=pred))
-    return np.mean(auc)
+    y_true = y_true.flatten().int().cpu().detach().numpy()
+    y_pred = y_pred.flatten().cpu().detach().numpy()
+    mauc = roc_auc_score(y_true=y_true, y_score=y_pred)
+    return mauc
 
 
 def dice_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
@@ -37,6 +49,6 @@ def iou_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
 
 
 if __name__ == "__main__":
-    y_true = torch.randint(low=0, high=2, size=(1, 4, 3, 6))
-    y_pred = torch.rand(size=(1, 4, 3, 6))
+    y_true = torch.randint(low=0, high=2, size=(1, 4, 960, 1440))
+    y_pred = torch.rand(size=(1, 4, 960, 1440))
     print(mauc_coef(y_true=y_true, y_pred=y_pred))

@@ -2,12 +2,14 @@ import gc
 import copy
 import time
 import torch
-import wandb
+
+# import wandb
 import numpy as np
 from collections import defaultdict
 
 from torch.optim import Adam
 
+from utils.transform import get_transform
 from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
 from utils.loss import get_loss_CE
 from utils.training import train_one_epoch, valid_one_epoch
@@ -21,21 +23,23 @@ def run_training(model, optimizer, device, num_epochs):
 
     if torch.cuda.is_available():
         print("cuda: {}\n".format(torch.cuda.get_device_name()))
+    
     # Initilization
     start = time.time()
     best_model_weights = copy.deepcopy(model.state_dict())
     best_dice = -np.inf
     best_epoch = -1
     history = defaultdict(list)
-    # Load Data
 
+    # Load Data
+    train_dataloader = get_train_dataloader_IDRiD(transform=get_transform(resize=True))
+    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_transform(resize=True))
+    
     loss_fn = get_loss_CE()
+    
     for epoch in range(1, num_epochs + 1):
         gc.collect()
-        print(f"Epoch {epoch}/{num_epochs}", end="")
-
-        train_dataloader = get_train_dataloader_IDRiD()
-        valid_dataloader = get_valid_dataloader_IDRiD()
+        print(f"Epoch {epoch}/{num_epochs}")
 
         train_loss = train_one_epoch(
             model=model,
@@ -72,7 +76,7 @@ def run_training(model, optimizer, device, num_epochs):
         # )
 
         print(
-            f"Valid mAUC: {val_mauc} | Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
+            f"Valid mAUC: {val_mauc:0.4f} | Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
         )
 
         # deep copy the model
@@ -120,10 +124,10 @@ if __name__ == "__main__":
 
     optimizer = Adam(model.parameters(), lr=1e-3)
     loss_fn = get_loss_CE()
-    device = "cpu"
+    device = "cuda"
     run_training(
         model=model,
         optimizer=optimizer,
         device=device,
-        num_epochs=1,
+        num_epochs=5,
     )

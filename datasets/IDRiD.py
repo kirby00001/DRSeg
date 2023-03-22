@@ -28,7 +28,7 @@ class IDRiD(Dataset):
         return img, mask
 
 
-def get_train_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
+def get_train_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
     img_paths = glob(
         "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/*.jpg"
     )
@@ -44,7 +44,7 @@ def get_train_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
     )
 
 
-def get_valid_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
+def get_valid_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
     image_paths = glob(
         "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/*.jpg"
     )

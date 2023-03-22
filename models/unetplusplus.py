@@ -1,4 +1,6 @@
+from torchinfo import summary
 import segmentation_models_pytorch as smp
+
 
 def get_model_unetplusplus(
     encoder_name,
@@ -32,4 +34,5 @@ if __name__ == "__main__":
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
     )
-    print(model)
+    # model summary
+    summary(model, input_size=(1, 3, 960, 1440), device="cuda")

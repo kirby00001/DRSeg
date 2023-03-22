@@ -4,7 +4,7 @@ import numpy as np
 
 
 def load_image(path):
-    img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    img = cv2.imread(path, cv2.IMREAD_COLOR)
     return img
 
 
@@ -28,14 +28,20 @@ def load_mask(paths):
     masks = np.zeros(shape=(2848, 4288, 4))
     for path in paths:
         # print("path2id:",path2id(path))
-        masks[:, :, path2id(path) - 1] = cv2.imread(path,-1)
-    return masks/76
+        image_id = path2id(path)
+        mask = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        masks[:, :, image_id - 1] = mask
+    return masks/76.0
 
 
 if __name__ == "__main__":
 
+    mask_path = "./data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/b. Testing Set/3. Hard Exudates/IDRiD_81_EX.tif"
+    mask = cv2.imread(mask_path, cv2.IMREAD_REDUCED_GRAYSCALE_8)
+    print(mask.max())
+    
     img_path = (
-        "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/IDRiD_10.jpg"
+        "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/IDRiD_81.jpg"
     )
     # load image
     img = load_image(img_path)
@@ -48,6 +54,5 @@ if __name__ == "__main__":
         print(mask_path)
     # load masks
     mask = load_mask(mask_paths)
-    print(mask)
     print("mask.max", mask.max())
     print("mask.shape", mask.shape)

@@ -1,25 +1,25 @@
 import gc
 import copy
 import time
-import torch
-
-# import wandb
+import wandb
 import numpy as np
 from collections import defaultdict
 
+
+import torch
 from torch.optim import Adam
 
-from utils.transform import get_transform
-from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
 from utils.loss import get_loss_CE
+from utils.transform import get_transform
 from utils.training import train_one_epoch, valid_one_epoch
+from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
 
 from models.unetplusplus import get_model_unetplusplus
 
 
 def run_training(model, optimizer, device, num_epochs):
     # To automatically log gradients
-    # wandb.watch(model, log_freq=100)
+    wandb.watch(model, log_freq=100)
 
     if torch.cuda.is_available():
         print("cuda: {}\n".format(torch.cuda.get_device_name()))
@@ -63,17 +63,17 @@ def run_training(model, optimizer, device, num_epochs):
         history["Valid Dice"].append(val_dice)
         history["Valid IoU"].append(val_iou)
 
-        # Log the metrics
-        # wandb.log(
-        #     {
-        #         "Train Loss": train_loss,
-        #         "Valid Loss": val_loss,
-        #         "Valid mAUC": val_mauc,
-        #         "Valid Dice": val_dice,
-        #         "Valid IoU": val_iou,
-        #         # "LR": scheduler.get_last_lr()[0],
-        #     }
-        # )
+        # Log loss and metrics
+        wandb.log(
+            {
+                "Train Loss": train_loss,
+                "Valid Loss": val_loss,
+                "Valid mAUC": val_mauc,
+                "Valid Dice": val_dice,
+                "Valid IoU": val_iou,
+                # "LR": scheduler.get_last_lr()[0],
+            }
+        )
 
         print(
             f"Valid mAUC: {val_mauc:0.4f} | Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"

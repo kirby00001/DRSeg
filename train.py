@@ -3,6 +3,7 @@ import copy
 import time
 import wandb
 import numpy as np
+from colorama import Fore, Back, Style
 from collections import defaultdict
 
 
@@ -16,6 +17,9 @@ from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRi
 
 from models.unetplusplus import get_model_unetplusplus
 
+color = Fore.GREEN
+reset = Style.RESET_ALL
+
 
 def run_training(model, optimizer, device, num_epochs):
     # To automatically log gradients
@@ -23,20 +27,21 @@ def run_training(model, optimizer, device, num_epochs):
 
     if torch.cuda.is_available():
         print("cuda: {}\n".format(torch.cuda.get_device_name()))
-    
+
     # Initilization
     start = time.time()
     best_model_weights = copy.deepcopy(model.state_dict())
     best_dice = -np.inf
+    best_iou = -np.inf
     best_epoch = -1
     history = defaultdict(list)
 
     # Load Data
     train_dataloader = get_train_dataloader_IDRiD(transform=get_transform(resize=True))
     valid_dataloader = get_valid_dataloader_IDRiD(transform=get_transform(resize=True))
-    
+
     loss_fn = get_loss_CE()
-    
+
     for epoch in range(1, num_epochs + 1):
         gc.collect()
         print(f"Epoch {epoch}/{num_epochs}")
@@ -80,24 +85,27 @@ def run_training(model, optimizer, device, num_epochs):
         )
 
         # deep copy the model
-        # if val_dice >= best_dice:
-        #     print(f"{c_}Valid Score Improved ({best_dice:0.4f} ---> {val_dice:0.4f})")
-        #     best_dice = val_dice
-        #     best_jaccard = val_iou
-        #     best_epoch = epoch
-        #     run.summary["Best Dice"] = best_dice
-        #     run.summary["Best Jaccard"] = best_jaccard
-        #     run.summary["Best Epoch"] = best_epoch
-        #     best_model_weights = copy.deepcopy(model.state_dict())
-        #     PATH = f"best_epoch-{fold:02d}.bin"
-        #     torch.save(model.state_dict(), PATH)
-        #     # Save a model file from the current directory
-        #     wandb.save(PATH)
-        #     print(f"Model Saved{sr_}")
+        if val_dice > best_dice:
+            print(
+                f"{color}Valid Score Improved ({best_dice:0.4f} ---> {val_dice:0.4f})"
+            )
+            best_dice = val_dice
+            best_iou = val_iou
+            best_epoch = epoch
+            if run != None:
+                run.summary["Best Dice"] = best_dice
+                run.summary["Best IoU"] = best_iou
+                run.summary["Best Epoch"] = best_epoch
+            best_model_weights = copy.deepcopy(model.state_dict())
+            PATH = f"best_epoch.bin"
+            torch.save(model.state_dict(), PATH)
+            # Save a model file from the current directory
+            wandb.save(PATH)
+            print(f"Model Saved{reset}")
 
-        # last_model_weights = copy.deepcopy(model.state_dict())
-        # PATH = f"last_epoch-{fold:02d}.bin"
-        # torch.save(model.state_dict(), PATH)
+        last_model_weights = copy.deepcopy(model.state_dict())
+        PATH = f"last_epoch.bin"
+        torch.save(model.state_dict(), PATH)
 
     end = time.time()
     time_elapsed = end - start
@@ -108,11 +116,12 @@ def run_training(model, optimizer, device, num_epochs):
             (time_elapsed % 3600) % 60,
         )
     )
-    # print("Best Score: {:.4f}".format(best_jaccard))
+    print("Best Score: {:.4f}".format(best_iou))
 
     # load best model weights
-    # model.load_state_dict(best_model_weights)
-
+    model.load_state_dict(best_model_weights)
+    if run != None:
+        run.finish()
     return model, history
 
 
@@ -125,6 +134,17 @@ if __name__ == "__main__":
     optimizer = Adam(model.parameters(), lr=1e-3)
     loss_fn = get_loss_CE()
     device = "cuda"
+    wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
+    anonymous = None
+
+    run = wandb.init(
+        project="uw-maddison-gi-tract",
+        name=f"Dim 480x720|model U-net++",
+        anonymous=anonymous,
+        group="U-net++ efficientnet_b0 480x720",
+        config={"epoch": 1},
+    )
+
     run_training(
         model=model,
         optimizer=optimizer,

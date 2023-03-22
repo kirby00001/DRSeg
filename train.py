@@ -97,14 +97,14 @@ def run_training(model, optimizer, device, num_epochs):
                 run.summary["Best IoU"] = best_iou
                 run.summary["Best Epoch"] = best_epoch
             best_model_weights = copy.deepcopy(model.state_dict())
-            PATH = f"best_epoch.bin"
+            PATH = f"./checkpoints/best_epoch.bin"
             torch.save(model.state_dict(), PATH)
             # Save a model file from the current directory
             wandb.save(PATH)
             print(f"Model Saved{reset}")
 
         last_model_weights = copy.deepcopy(model.state_dict())
-        PATH = f"last_epoch.bin"
+        PATH = f"./checkpoints/last_epoch.bin"
         torch.save(model.state_dict(), PATH)
 
     end = time.time()

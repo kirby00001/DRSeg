@@ -1,7 +1,7 @@
+from glob import glob
+
 import torch
 from torch.utils.data import Dataset, DataLoader
-
-from glob import glob
 
 from utils.transform import get_train_transform
 from utils.load import load_image, path2paths, load_mask

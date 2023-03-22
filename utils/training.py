@@ -3,14 +3,17 @@ import numpy as np
 from tqdm import tqdm
 
 import torch
+from torch.optim import Adam
 import torch.nn.functional as F
 
-from utils.transform import get_train_transform,get_valid_transform
-from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
-from models.unetplusplus import get_model_unetplusplus
 from utils.loss import get_loss_CE
-from torch.optim import Adam
 from utils.metrics import mauc_coef, dice_coef, iou_coef
+from utils.transform import get_train_transform,get_valid_transform
+
+from models.unetplusplus import get_model_unetplusplus
+
+from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
+
 
 
 def train_one_epoch(model, optimizer, loss_fn, dataloader, device):

@@ -11,9 +11,9 @@ import torch
 from torch.optim import Adam
 
 from utils.loss import get_loss_CE
-from utils.transform import get_transform
+from utils.transform import get_train_transform
 from utils.training import train_one_epoch, valid_one_epoch
-from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
+from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD # type: ignore
 
 from models.unetplusplus import get_model_unetplusplus
 
@@ -37,8 +37,8 @@ def run_training(model, optimizer, device, num_epochs):
     history = defaultdict(list)
 
     # Load Data
-    train_dataloader = get_train_dataloader_IDRiD(transform=get_transform(resize=True))
-    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_transform(resize=True))
+    train_dataloader = get_train_dataloader_IDRiD(transform=get_train_transform(resize=True))
+    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_train_transform())
 
     loss_fn = get_loss_CE()
 
@@ -131,14 +131,14 @@ if __name__ == "__main__":
         encoder_weights="imagenet",
     )
 
-    optimizer = Adam(model.parameters(), lr=1e-3)
+    optimizer = Adam(model.parameters(), lr=2e-3)
     loss_fn = get_loss_CE()
     device = "cuda"
     wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
     anonymous = None
 
     run = wandb.init(
-        project="uw-maddison-gi-tract",
+        project="DR Segmentation",
         name=f"Dim 480x720|model U-net++",
         anonymous=anonymous,
         group="U-net++ efficientnet_b0 480x720",

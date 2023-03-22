@@ -3,7 +3,7 @@ from torch.nn import CrossEntropyLoss
 
 def get_loss_CE(weight=None):
     return CrossEntropyLoss(
-        reduction="sum",
+        reduction="mean",
     )
 
 

@@ -10,6 +10,7 @@ def get_model_unetplusplus(
     decoder_channels=[32, 96, 144, 240],
     in_channels=3,
     decoder_use_batchnorm=True,
+    activation=None,
 ):
     """_summary_
 
@@ -25,7 +26,8 @@ def get_model_unetplusplus(
         decoder_channels=decoder_channels,
         classes=classes,
         in_channels=in_channels,
-        decoder_use_batchnorm=decoder_use_batchnorm,
+        decoder_use_batchnorm=decoder_use_batchnorm, # type: ignore
+        activation=activation,
     )
 
 
@@ -35,4 +37,4 @@ if __name__ == "__main__":
         encoder_weights="imagenet",
     )
     # model summary
-    summary(model, input_size=(1, 3, 960, 1440), device="cuda")
+    summary(model, input_size=(1, 3, 960, 1440), device="cuda", depth=5)

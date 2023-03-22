@@ -3,7 +3,9 @@ import numpy as np
 from tqdm import tqdm
 
 import torch
-from utils.transform import get_transform
+import torch.nn.functional as F
+
+from utils.transform import get_train_transform,get_valid_transform
 from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
 from models.unetplusplus import get_model_unetplusplus
 from utils.loss import get_loss_CE
@@ -77,9 +79,10 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
         dataset_size += batch_size
         epoch_loss = running_loss / dataset_size
 
-        mauc = mauc_coef(y_true=masks, y_pred=y_pred)
-        dice = dice_coef(y_true=masks, y_pred=y_pred).cpu().detach().numpy()
-        iou = iou_coef(y_true=masks, y_pred=y_pred).cpu().detach().numpy()
+        y_score = F.softmax(y_pred, dim=1)
+        mauc = mauc_coef(y_true=masks, y_pred=y_score)
+        dice = dice_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
+        iou = iou_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
         val_scores.append([mauc, dice, iou])
 
         mem = torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
@@ -101,8 +104,8 @@ if __name__ == "__main__":
         encoder_weights="imagenet",
     )
 
-    train_dataloader = get_train_dataloader_IDRiD(transform=get_transform(resize=True))
-    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_transform(resize=True))
+    train_dataloader = get_train_dataloader_IDRiD(transform=get_train_transform(resize=True))
+    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_valid_transform(resize=True))
 
     optimizer = Adam(model.parameters(), lr=1e-3)
     loss_fn = get_loss_CE()

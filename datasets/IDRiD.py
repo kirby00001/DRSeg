@@ -3,7 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from glob import glob
 
-from utils.transform import get_transform
+from utils.transform import get_train_transform
 from utils.load import load_image, path2paths, load_mask
 
 
@@ -28,7 +28,7 @@ class IDRiD(Dataset):
         return img, mask
 
 
-def get_train_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
+def get_train_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
     img_paths = glob(
         "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/*.jpg"
     )
@@ -44,7 +44,7 @@ def get_train_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
     )
 
 
-def get_valid_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
+def get_valid_dataloader_IDRiD(batch_size=1, shuffle=True, transform=None):
     image_paths = glob(
         "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/*.jpg"
     )
@@ -60,8 +60,8 @@ def get_valid_dataloader_IDRiD(batch_size=1, shuffle=False, transform=None):
     )
     
 if __name__ == "__main__":
-    train_dataloader = get_train_dataloader_IDRiD(batch_size=1, transform=get_transform())
-    test_dataloader = get_valid_dataloader_IDRiD(batch_size=1, transform=get_transform())
+    train_dataloader = get_train_dataloader_IDRiD(batch_size=1, transform=get_train_transform())
+    test_dataloader = get_valid_dataloader_IDRiD(batch_size=1, transform=get_train_transform())
     
     # dataloader = get_dataloader_IDRiD(batch_size=1)
     image, mask = next(iter(test_dataloader))

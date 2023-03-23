@@ -1,5 +1,6 @@
 import cv2
 import glob
+import torch
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,12 +19,18 @@ def path2paths(image_path):
     i = infos[-1][:-4]
     # print("ID:",i)
     return glob.glob(
-        f"../data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
+        f"./data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
     )
 
 
 def path2id(path):
     return int(path.split("/")[-2][0])
+
+
+def mask2label(masks):
+    pad_masks = np.pad(masks, pad_width=[(1, 0), (0, 0), (0, 0)])
+    label = np.argmax(pad_masks, axis=-1)
+    return label
 
 
 def load_mask(paths):
@@ -32,23 +39,18 @@ def load_mask(paths):
         # print("path2id:",path2id(path))
         image_id = path2id(path)
         mask = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-        print(f"mask{image_id}.max", mask.max())
         masks[:, :, image_id - 1] = mask
-    return masks / 76.0
-
-
-def mask2label(masks):
-    pad_masks = np.pad(masks, pad_width=[(0, 0), (0, 0), (1, 0)])
-    label = np.argmax(pad_masks, axis=-1)
-    return label
+    masks = masks / 76.0
+    label = torch.Tensor(mask2label(masks=masks)).long()
+    return torch.nn.functional.one_hot(label, num_classes=5).detach().numpy()
 
 
 if __name__ == "__main__":
     img_path = (
-        "../data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/IDRiD_17.jpg"
+        "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/IDRiD_17.jpg"
     )
     img_path = (
-        "../data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/IDRiD_81.jpg"
+        "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/IDRiD_81.jpg"
     )
     # load image
     img = load_image(img_path)
@@ -71,9 +73,3 @@ if __name__ == "__main__":
     # print(masks)
     # for i in range(4):
     #     plt.imshow(masks[:, :, i], alpha=1, cmap=cmaps[i])
-
-    # to label
-    label = mask2label(masks)
-    print(label)
-    print("label.shape", label.shape)
-    print("label.max", label.max())

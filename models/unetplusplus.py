@@ -5,7 +5,7 @@ import segmentation_models_pytorch as smp
 def get_model_unetplusplus(
     encoder_name,
     encoder_weights,
-    classes=4,
+    classes,
     encoder_depth=4,
     decoder_channels=[32, 96, 144, 240],
     in_channels=3,
@@ -26,7 +26,7 @@ def get_model_unetplusplus(
         decoder_channels=decoder_channels,
         classes=classes,
         in_channels=in_channels,
-        decoder_use_batchnorm=decoder_use_batchnorm, # type: ignore
+        decoder_use_batchnorm=decoder_use_batchnorm,  # type: ignore
         activation=activation,
     )
 
@@ -35,6 +35,7 @@ if __name__ == "__main__":
     model = get_model_unetplusplus(
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
+        classes=5,
     )
     # model summary
     summary(model, input_size=(1, 3, 960, 1440), device="cuda", depth=5)

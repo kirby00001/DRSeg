@@ -1,9 +1,10 @@
 import torch
 from torch.nn import CrossEntropyLoss
 
+
 def get_loss_CE(weight=None):
     return CrossEntropyLoss(
-        reduction="mean",
+        reduction="sum",
     )
 
 

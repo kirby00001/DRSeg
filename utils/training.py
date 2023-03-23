@@ -8,12 +8,11 @@ import torch.nn.functional as F
 
 from utils.loss import get_loss_CE
 from utils.metrics import mauc_coef, dice_coef, iou_coef
-from utils.transform import get_train_transform,get_valid_transform
+from utils.transform import get_train_transform, get_valid_transform
 
 from models.unetplusplus import get_model_unetplusplus
 
 from datasets.IDRiD import get_train_dataloader_IDRiD, get_valid_dataloader_IDRiD
-
 
 
 def train_one_epoch(model, optimizer, loss_fn, dataloader, device):
@@ -72,6 +71,7 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
     for _, (images, masks) in pbar:
         images = images.to(device, dtype=torch.float)
         masks = masks.to(device, dtype=torch.float)
+
         batch_size = images.shape[0]
 
         y_pred = model(images)
@@ -105,13 +105,19 @@ if __name__ == "__main__":
     model = get_model_unetplusplus(
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
+        classes=5,
     )
 
-    train_dataloader = get_train_dataloader_IDRiD(transform=get_train_transform(resize=True))
-    valid_dataloader = get_valid_dataloader_IDRiD(transform=get_valid_transform(resize=True))
+    train_dataloader = get_train_dataloader_IDRiD(
+        transform=get_train_transform(resize=True)
+    )
+    valid_dataloader = get_valid_dataloader_IDRiD(
+        transform=get_valid_transform(resize=True)
+    )
 
     optimizer = Adam(model.parameters(), lr=1e-3)
     loss_fn = get_loss_CE()
+    # loss_fn = BCEWithLogitsLoss()
 
     train_one_epoch(
         model=model,

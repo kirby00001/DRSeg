@@ -1,14 +1,6 @@
-import sys
-
-sys.path.append("..")
-
-import torch
 from glob import glob
 from torch.utils.data import Dataset, DataLoader
-
-from utils.transform import get_train_transform, get_valid_transform
-from utils.load import load_image, path2paths, load_mask
-from utils.visualization import image_visualiztaion
+from utils import get_transform, load_image, load_mask, image_show
 
 
 class IDRiD(Dataset):
@@ -21,22 +13,27 @@ class IDRiD(Dataset):
 
     def __getitem__(self, index):
         img_path = self.img_paths[index]
-        print(img_path)
         img = load_image(img_path)
-        mask = load_mask(path2paths(img_path))
+        mask = load_mask(img_path)
+
         data = self.transform(image=img, mask=mask)
         img, mask = data["image"], data["mask"]
+
         return img, mask
 
 
-def get_train_dataloader_IDRiD(transform, batch_size=1, shuffle=True):
-    img_paths = glob(
-        "../data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/*.jpg"
-    )
+def get_dataloader_IDRiD(transform, batch_size, shuffle, mode):
+    if mode == "train":
+        img_paths = glob(
+            "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/*.jpg"
+        )
+    elif mode == "valid":
+        img_paths = glob(
+            "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/*.jpg"
+        )
+    else:
+        raise ValueError("mode = 'train'|'valid'")
     img_paths.sort()
-    # print("image paths:")
-    # for img_path in img_paths:
-    #     print(img_path)
     dataset = IDRiD(img_paths=img_paths, transform=transform)
     return DataLoader(
         dataset=dataset,
@@ -45,28 +42,18 @@ def get_train_dataloader_IDRiD(transform, batch_size=1, shuffle=True):
     )
 
 
-def get_valid_dataloader_IDRiD(transform, batch_size=1, shuffle=True):
-    image_paths = glob(
-        "../data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/*.jpg"
-    )
-    image_paths.sort()
-    # print("image paths:")
-    # for img_path in img_paths:
-    #     print(img_path)
-    dataset = IDRiD(img_paths=image_paths, transform=transform)
-    return DataLoader(
-        dataset=dataset,
-        batch_size=batch_size,
-        shuffle=shuffle,
-    )
-
-
 if __name__ == "__main__":
-    train_dataloader = get_train_dataloader_IDRiD(
-        batch_size=1, transform=get_train_transform()
+    train_dataloader = get_dataloader_IDRiD(
+        transform=get_transform("train"),
+        batch_size=1,
+        shuffle=True,
+        mode="train",
     )
-    test_dataloader = get_valid_dataloader_IDRiD(
-        batch_size=1, transform=get_valid_transform()
+    test_dataloader = get_dataloader_IDRiD(
+        transform=get_transform("valid"),
+        batch_size=1,
+        shuffle=True,
+        mode="valid",
     )
 
     image, masks = next(iter(train_dataloader))
@@ -77,4 +64,3 @@ if __name__ == "__main__":
     print("mask.max:", masks.max())
     print("mask.min", masks.min())
     print("mask.shape:", masks.shape)
-    image_visualiztaion(image[0].permute(1, 2, 0), masks[0].permute(1, 2, 0))

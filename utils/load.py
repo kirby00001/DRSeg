@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image
 
 
-def load_image(path):
-    img = np.array(Image.open(path))
+def load_image(image_path):
+    img = np.array(Image.open(image_path))
     return img
 
 
@@ -22,8 +22,8 @@ def path2paths(image_path):
     )
 
 
-def path2id(path):
-    return int(path.split("/")[-2][0])
+def path2id(mask_path):
+    return int(mask_path.split("/")[-2][0])
 
 
 def mask2label(masks):
@@ -32,9 +32,10 @@ def mask2label(masks):
     return label
 
 
-def load_mask(paths):
+def load_mask(image_path):
+    mask_paths = path2paths(image_path)
     masks = np.zeros(shape=(2848, 4288, 4))
-    for path in paths:
+    for path in mask_paths:
         # print("path2id:",path2id(path))
         image_id = path2id(path)
         mask = cv2.imread(path, cv2.IMREAD_GRAYSCALE)

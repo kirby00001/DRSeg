@@ -1,9 +1,8 @@
 import cv2
 import glob
 import torch
-from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image
 
 
 def load_image(path):
@@ -19,7 +18,7 @@ def path2paths(image_path):
     i = infos[-1][:-4]
     # print("ID:",i)
     return glob.glob(
-        f"./data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
+        f"../data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
     )
 
 
@@ -55,9 +54,7 @@ if __name__ == "__main__":
     # load image
     img = load_image(img_path)
     print("img.max:", img.max())
-    print("img.shape", img.shape)
-    # plt.imshow(img)
-    # from image path to mask paths
+
     mask_paths = path2paths(img_path)
     print("mask paths:")
     for mask_path in mask_paths:
@@ -66,10 +63,3 @@ if __name__ == "__main__":
     masks = load_mask(mask_paths)
     print("mask.max", masks.max())
     print("mask.shape", masks.shape)
-
-    # Visualization
-    # cmaps = ["Greens_r", "Purples_r", "Blues_r", "Reds_r"]
-    # masks = np.ma.masked_where(masks == 0, masks)
-    # print(masks)
-    # for i in range(4):
-    #     plt.imshow(masks[:, :, i], alpha=1, cmap=cmaps[i])

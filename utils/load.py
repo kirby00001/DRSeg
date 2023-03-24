@@ -7,7 +7,7 @@ from PIL import Image
 
 def load_image(image_path):
     img = np.array(Image.open(image_path))
-    return img
+    return img/255.0
 
 
 # data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/b. Testing Set/1. Microaneurysms
@@ -18,7 +18,7 @@ def path2paths(image_path):
     i = infos[-1][:-4]
     # print("ID:",i)
     return glob.glob(
-        f"../data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
+        f"./data/IDRiD/A. Segmentation/2. All Segmentation Groundtruths/{train_or_test}/[1234]*/{i}_*.tif"
     )
 
 
@@ -27,7 +27,7 @@ def path2id(mask_path):
 
 
 def mask2label(masks):
-    pad_masks = np.pad(masks, pad_width=[(1, 0), (0, 0), (0, 0)])
+    pad_masks = np.pad(masks, pad_width=[(0, 0), (0, 0), (1, 0)])
     label = np.argmax(pad_masks, axis=-1)
     return label
 
@@ -40,27 +40,18 @@ def load_mask(image_path):
         image_id = path2id(path)
         mask = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
         masks[:, :, image_id - 1] = mask
-    masks = masks / 76.0
     label = torch.Tensor(mask2label(masks=masks)).long()
     return torch.nn.functional.one_hot(label, num_classes=5).detach().numpy()
 
 
 if __name__ == "__main__":
-    img_path = (
-        "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/IDRiD_17.jpg"
-    )
-    img_path = (
-        "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/IDRiD_81.jpg"
-    )
+    # img_path = "./data/IDRiD/A. Segmentation/1. Original Images/a. Training Set/IDRiD_17.jpg"
+    iamge_path = "./data/IDRiD/A. Segmentation/1. Original Images/b. Testing Set/IDRiD_81.jpg"
     # load image
-    img = load_image(img_path)
-    print("img.max:", img.max())
-
-    mask_paths = path2paths(img_path)
-    print("mask paths:")
-    for mask_path in mask_paths:
-        print(mask_path)
+    image = load_image(iamge_path)
+    print("img.max:", image.max())
+    print("image.shape", image.shape)
     # load masks
-    masks = load_mask(mask_paths)
+    masks = load_mask(iamge_path)
     print("mask.max", masks.max())
     print("mask.shape", masks.shape)

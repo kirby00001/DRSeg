@@ -84,7 +84,8 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
         epoch_loss = running_loss / dataset_size
 
         y_score = F.softmax(y_pred, dim=1)
-        mauc = mauc_coef(y_true=masks, y_pred=y_score)
+        # mauc = mauc_coef(y_true=masks, y_pred=y_score)
+        mauc = 0
         dice = dice_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
         iou = iou_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
         val_scores.append([mauc, dice, iou])
@@ -103,7 +104,7 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
 
 def run_training(model, loss_fn, optimizer, device, num_epochs):
     # To automatically log gradients
-    # wandb.watch(model, log_freq=100)
+    wandb.watch(model, log_freq=100)
 
     if torch.cuda.is_available():
         print("cuda: {}\n".format(torch.cuda.get_device_name()))
@@ -157,16 +158,16 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
         history["Valid IoU"].append(val_iou)
 
         # Log loss and metrics
-        # wandb.log(
-        #     {
-        #         "Train Loss": train_loss,
-        #         "Valid Loss": val_loss,
-        #         "Valid mAUC": val_mauc,
-        #         "Valid Dice": val_dice,
-        #         "Valid IoU": val_iou,
-        #         # "LR": scheduler.get_last_lr()[0],
-        #     }
-        # )
+        wandb.log(
+            {
+                "Train Loss": train_loss,
+                "Valid Loss": val_loss,
+                "Valid mAUC": val_mauc,
+                "Valid Dice": val_dice,
+                "Valid IoU": val_iou,
+                # "LR": scheduler.get_last_lr()[0],
+            }
+        )
 
         print(
             f"Valid mAUC: {val_mauc:0.4f} | Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
@@ -180,15 +181,15 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
             best_dice = val_dice
             best_iou = val_iou
             best_epoch = epoch
-            # if run != None:
-            #     run.summary["Best Dice"] = best_dice
-            #     run.summary["Best IoU"] = best_iou
-            #     run.summary["Best Epoch"] = best_epoch
+            if run != None:
+                run.summary["Best Dice"] = best_dice
+                run.summary["Best IoU"] = best_iou
+                run.summary["Best Epoch"] = best_epoch
             best_model_weights = copy.deepcopy(model.state_dict())
             PATH = f"./checkpoints/best_epoch.bin"
             torch.save(model.state_dict(), PATH)
             # Save a model file from the current directory
-            # wandb.save(PATH)
+            wandb.save(PATH)
             print(f"Model Saved{reset}")
 
         last_model_weights = copy.deepcopy(model.state_dict())
@@ -208,7 +209,8 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
     # load best model weights
     model.load_state_dict(best_model_weights)
     
-    # run.finish() if run != None
+    if run != None:
+        run.finish() 
     
     return model, history
 
@@ -224,15 +226,15 @@ if __name__ == "__main__":
     loss_fn = get_loss_CE()
     device = "cuda"
 
-    # wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
-    # anonymous = None
-    # run = wandb.init(
-    #     project="DR Segmentation",
-    #     name=f"Dim 480x720|model U-net++",
-    #     anonymous=anonymous,
-    #     group="U-net++ efficientnet_b0 480x720",
-    #     config={"epoch": 1},
-    # )
+    wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
+    anonymous = None
+    run = wandb.init(
+        project="DR Segmentation",
+        name=f"Dim 480x720|model U-net++",
+        anonymous=anonymous,
+        group="U-net++ efficientnet_b0 480x720",
+        config={"epoch": 1},
+    )
 
     run_training(
         model=model,

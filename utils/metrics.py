@@ -30,8 +30,8 @@ def mauc_coef(y_true, y_pred):
 
 
 def dice_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
-    y_true = y_true[:,1:,:,:].to(torch.float32)
-    y_pred = y_pred[:,1:,:,:].to(torch.float32)
+    y_true = y_true.to(torch.float32)
+    y_pred = y_pred.to(torch.float32)
     inter = (y_true * y_pred).sum(dim=dim)
     den = y_true.sum(dim=dim) + y_pred.sum(dim=dim)
     dice = ((2 * inter + epsilon) / (den + epsilon)).mean(dim=(1, 0))
@@ -39,8 +39,8 @@ def dice_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
 
 
 def iou_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
-    y_true = y_true[:,1:,:,:].to(torch.float32)
-    y_pred = y_pred[:,1:,:,:].to(torch.float32)
+    y_true = y_true.to(torch.float32)
+    y_pred = y_pred.to(torch.float32)
     inter = (y_true * y_pred).sum(dim=dim)
     union = (y_true + y_pred - y_true * y_pred).sum(dim=dim)
     iou = ((inter + epsilon) / (union + epsilon)).mean(dim=(1, 0))

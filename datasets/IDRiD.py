@@ -44,14 +44,14 @@ def get_dataloader_IDRiD(transform, batch_size, shuffle, mode):
 
 if __name__ == "__main__":
     train_dataloader = get_dataloader_IDRiD(
-        transform=get_transform("train"),
         batch_size=1,
+        transform=get_transform(mode="train"),
         shuffle=True,
         mode="train",
     )
-    test_dataloader = get_dataloader_IDRiD(
-        transform=get_transform("valid"),
+    valid_dataloader = get_dataloader_IDRiD(
         batch_size=1,
+        transform=get_transform(mode="valid"),
         shuffle=True,
         mode="valid",
     )

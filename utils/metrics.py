@@ -2,26 +2,6 @@ import torch
 from sklearn.metrics import roc_auc_score
 
 
-# def mauc_coef(y_true, y_pred):
-#     H = y_true.shape[-2]
-#     W = y_true.shape[-1]
-#     y_true = y_true.squeeze().int()
-#     y_pred = y_pred.squeeze()
-#     auc = []
-#     for i in range(4):
-#         label = y_true[i].reshape(H * W).cpu().detach().numpy()
-#         pred = y_pred[i].reshape(H * W).cpu().detach().numpy()
-#         if label.max() != 0:
-#             auc.append(
-#                 roc_auc_score(
-#                     y_true=label,
-#                     y_score=pred,
-#                 )
-#             )
-#     mauc = np.mean(auc)
-#     return mauc
-
-
 def mauc_coef(y_true, y_pred):
     y_true = y_true[:,1:,:,:].flatten().int().cpu().detach().numpy()
     y_pred = y_pred[:,1:,:,:].flatten().cpu().detach().numpy()
@@ -29,18 +9,18 @@ def mauc_coef(y_true, y_pred):
     return mauc
 
 
-def dice_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
-    y_true = y_true[:,1:,:,:].to(torch.float32)
-    y_pred = y_pred[:,1:,:,:].to(torch.float32)
+def dice_coef(y_true, y_pred, dim=(2, 3), epsilon=1e-9):
+    y_true = y_true.to(torch.float32)
+    y_pred = y_pred.to(torch.float32)
     inter = (y_true * y_pred).sum(dim=dim)
     den = y_true.sum(dim=dim) + y_pred.sum(dim=dim)
     dice = ((2 * inter + epsilon) / (den + epsilon)).mean(dim=(1, 0))
     return dice
 
 
-def iou_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
-    y_true = y_true[:,1:,:,:].to(torch.float32)
-    y_pred = y_pred[:,1:,:,:].to(torch.float32)
+def iou_coef(y_true, y_pred, dim=(2, 3), epsilon=1e-9):
+    y_true = y_true.to(torch.float32)
+    y_pred = y_pred.to(torch.float32)
     inter = (y_true * y_pred).sum(dim=dim)
     union = (y_true + y_pred - y_true * y_pred).sum(dim=dim)
     iou = ((inter + epsilon) / (union + epsilon)).mean(dim=(1, 0))

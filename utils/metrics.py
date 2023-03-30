@@ -2,29 +2,9 @@ import torch
 from sklearn.metrics import roc_auc_score
 
 
-# def mauc_coef(y_true, y_pred):
-#     H = y_true.shape[-2]
-#     W = y_true.shape[-1]
-#     y_true = y_true.squeeze().int()
-#     y_pred = y_pred.squeeze()
-#     auc = []
-#     for i in range(4):
-#         label = y_true[i].reshape(H * W).cpu().detach().numpy()
-#         pred = y_pred[i].reshape(H * W).cpu().detach().numpy()
-#         if label.max() != 0:
-#             auc.append(
-#                 roc_auc_score(
-#                     y_true=label,
-#                     y_score=pred,
-#                 )
-#             )
-#     mauc = np.mean(auc)
-#     return mauc
-
-
 def mauc_coef(y_true, y_pred):
-    y_true = y_true[:,1:,:,:].flatten().int().cpu().detach().numpy()
-    y_pred = y_pred[:,1:,:,:].flatten().cpu().detach().numpy()
+    y_true = y_true.flatten().int().cpu().detach().numpy()
+    y_pred = y_pred.flatten().cpu().detach().numpy()
     mauc = roc_auc_score(y_true=y_true, y_score=y_pred)
     return mauc
 

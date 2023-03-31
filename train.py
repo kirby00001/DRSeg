@@ -11,7 +11,7 @@ import torch.nn.functional as F
 
 from datasets.IDRiD import get_dataloader_IDRiD
 from models.unetplusplus import get_model_unetplusplus
-from utils import get_transform, get_loss_CE, dice_coef, iou_coef
+from utils import get_transform, get_loss_CE, mauc_coef, dice_coef, iou_coef
 
 from colorama import Fore, Style
 from collections import defaultdict
@@ -84,10 +84,12 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
         epoch_loss = running_loss / dataset_size
 
         y_score = F.softmax(y_pred, dim=1)
-        # mauc = mauc_coef(y_true=masks, y_pred=y_score)
+        ma_auc, he_auc, ex_auc, se_auc, mean_auc = mauc_coef(
+            y_true=masks, y_pred=y_score
+        )
         dice = dice_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
         iou = iou_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
-        val_scores.append([dice, iou])
+        val_scores.append([ma_auc, he_auc, ex_auc, se_auc, mean_auc, dice, iou])
 
         mem = torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
         pbar.set_postfix(
@@ -149,36 +151,46 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
             device=device,
         )
 
-        val_dice, val_iou = val_scores
+        ma_auc, he_auc, ex_auc, se_auc, mean_auc, dice, iou = val_scores
         history["Train Loss"].append(train_loss)
         history["Valid Loss"].append(val_loss)
-        history["Valid Dice"].append(val_dice)
-        history["Valid IoU"].append(val_iou)
+        history["MA AUC"].append(ma_auc)
+        history["HE AUC"].append(he_auc)
+        history["EX AUC"].append(ex_auc)
+        history["SE AUC"].append(se_auc)
+        history["Mean AUC"].append(mean_auc)
+        history["Valid Dice"].append(dice)
+        history["Valid IoU"].append(iou)
 
         # Log loss and metrics
         wandb.log(
             {
                 "Train Loss": train_loss,
                 "Valid Loss": val_loss,
-                "Valid Dice": val_dice,
-                "Valid IoU": val_iou,
+                "MA AUC": ma_auc,
+                "HE AUC": he_auc,
+                "EX AUC": ex_auc,
+                "SE AUC": se_auc,
+                "Mean AUC": mean_auc,
+                "Dice": dice,
+                "IoU": iou,
                 # "LR": scheduler.get_last_lr()[0],
             }
         )
-
         print(
-            f"Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
+            f"MA AUC: {ma_auc:0.4f} | HE AUC: {he_auc:0.4f} | EX AUC: {ex_auc:0.4f} | SE AUC: {se_auc:0.4f} | Mean AUC: {mean_auc:0.4f}"
         )
+        print(f"Dice: {dice:0.4f} | IoU: {iou:0.4f}")
 
         # deep copy the model
-        if val_dice > best_dice:
-            print(
-                f"{color}Valid Score Improved ({best_dice:0.4f} ---> {val_dice:0.4f})"
-            )
-            best_dice = val_dice
-            best_iou = val_iou
+        if dice > best_dice:
+            print(f"{color}Valid Score Improved ({best_dice:0.4f} ---> {dice:0.4f})")
+            best_mean_auc = mean_auc
+            best_dice = dice
+            best_iou = iou
             best_epoch = epoch
             if run != None:
+                run.summary["Best Mean AUC"] = best_mean_auc
                 run.summary["Best Dice"] = best_dice
                 run.summary["Best IoU"] = best_iou
                 run.summary["Best Epoch"] = best_epoch
@@ -205,10 +217,10 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
     print("Best Score: {:.4f}".format(best_iou))
     # load best model weights
     model.load_state_dict(best_model_weights)
-    
+
     if run != None:
-        run.finish() 
-    
+        run.finish()
+
     return model, history
 
 

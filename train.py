@@ -11,7 +11,7 @@ import torch.nn.functional as F
 
 from datasets.IDRiD import get_dataloader_IDRiD
 from models.unetplusplus import get_model_unetplusplus
-from utils import get_transform, get_loss_CE, mauc_coef, dice_coef, iou_coef
+from utils import get_transform, get_loss_CE, dice_coef, iou_coef
 
 from colorama import Fore, Style
 from collections import defaultdict
@@ -85,10 +85,9 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
 
         y_score = F.softmax(y_pred, dim=1)
         # mauc = mauc_coef(y_true=masks, y_pred=y_score)
-        mauc = 0
         dice = dice_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
         iou = iou_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
-        val_scores.append([mauc, dice, iou])
+        val_scores.append([dice, iou])
 
         mem = torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
         pbar.set_postfix(
@@ -150,10 +149,9 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
             device=device,
         )
 
-        val_mauc, val_dice, val_iou = val_scores
+        val_dice, val_iou = val_scores
         history["Train Loss"].append(train_loss)
         history["Valid Loss"].append(val_loss)
-        history["Valid mAUC"].append(val_mauc)
         history["Valid Dice"].append(val_dice)
         history["Valid IoU"].append(val_iou)
 
@@ -162,7 +160,6 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
             {
                 "Train Loss": train_loss,
                 "Valid Loss": val_loss,
-                "Valid mAUC": val_mauc,
                 "Valid Dice": val_dice,
                 "Valid IoU": val_iou,
                 # "LR": scheduler.get_last_lr()[0],
@@ -170,7 +167,7 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
         )
 
         print(
-            f"Valid mAUC: {val_mauc:0.4f} | Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
+            f"Valid Dice: {val_dice:0.4f} | Valid IoU: {val_iou:0.4f}"
         )
 
         # deep copy the model
@@ -230,10 +227,10 @@ if __name__ == "__main__":
     anonymous = None
     run = wandb.init(
         project="DR Segmentation",
-        name=f"Dim 480x720|model U-net++",
+        name=f"Dim 960x1440|model U-net++",
         anonymous=anonymous,
-        group="U-net++ efficientnet_b0 480x720",
-        config={"epoch": 1},
+        group="U-net++ efficientnet_b0 960x1440",
+        config={"epoch": 10},
     )
 
     run_training(

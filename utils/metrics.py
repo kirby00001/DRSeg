@@ -2,11 +2,11 @@ import torch
 from sklearn.metrics import roc_auc_score
 
 
-def mauc_coef(y_true, y_pred):
-    y_true = y_true.flatten().int().cpu().detach().numpy()
-    y_pred = y_pred.flatten().cpu().detach().numpy()
-    mauc = roc_auc_score(y_true=y_true, y_score=y_pred)
-    return mauc
+# def mauc_coef(y_true, y_pred):
+#     y_true = y_true.flatten().int().cpu().detach().numpy()
+#     y_pred = y_pred.flatten().cpu().detach().numpy()
+#     mauc = roc_auc_score(y_true=y_true, y_score=y_pred)
+#     return mauc
 
 
 def dice_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
@@ -30,4 +30,3 @@ def iou_coef(y_true, y_pred, threshold=0.5, dim=(2, 3), epsilon=1e-9):
 if __name__ == "__main__":
     y_true = torch.randint(low=0, high=2, size=(1, 5, 960, 1440))
     y_pred = torch.rand(size=(1, 5, 960, 1440))
-    print(mauc_coef(y_true=y_true, y_pred=y_pred))

@@ -11,13 +11,7 @@ import torch.nn.functional as F
 
 from datasets.IDRiD import get_dataloader_IDRiD
 from models.unetplusplus import get_model_unetplusplus
-from utils import (
-    get_transform,
-    get_loss,
-    mauc_coef,
-    dice_coef,
-    iou_coef,
-)
+from utils import get_transform, get_loss, mauc_coef, dice_coef, iou_coef
 
 from colorama import Fore, Style
 from collections import defaultdict
@@ -102,8 +96,8 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
             valid_epoch_loss=f"{epoch_loss:0.4f}",
             gpu_memory=f"{mem:0.2f} GB",
         )
-
-    val_scores = np.mean(val_scores, axis=0)
+    masked_val_scores = np.ma.masked_equal(val_scores, -1)
+    val_scores = np.mean(masked_val_scores, axis=0)
     torch.cuda.empty_cache()
     gc.collect()
     return epoch_loss, val_scores
@@ -231,33 +225,40 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
 
 
 if __name__ == "__main__":
-    model = get_model_unetplusplus(
-        encoder_name="efficientnet-b0",
-        encoder_weights="imagenet",
-        classes=5,
-    )
 
-    optimizer = Adam(model.parameters(), lr=2e-3)
-    loss_fn = get_loss("FocalLoss")
-    device = "cuda"
-
-    wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
+    wandb_key = "b9b9bfc9d98eada98a991a294a1e40ad81437726"
     anonymous = None
+
+    encoder_name = "efficientnet-b0"
+    encoder_weights = "imagenet"
+    num_class = 5
+
+    epoch = 10
+    device = "cuda"
+    loss = "Focal Loss"
+
+    wandb.login(key=wandb_key)
     run = wandb.init(
         project="DR Segmentation",
         name=f"Dim 960x1440|model U-net++",
         anonymous=anonymous,
         group="U-net++ efficientnet_b0 960x1440",
         config={
-            "epoch": 10,
-            "loss": "Focal Loss",
+            "epoch": epoch,
+            "loss": loss,
         },
+    )
+
+    model = get_model_unetplusplus(
+        encoder_name=encoder_name,
+        encoder_weights=encoder_weights,
+        classes=num_class,
     )
 
     run_training(
         model=model,
-        loss_fn=loss_fn,
-        optimizer=optimizer,
+        loss_fn=get_loss(loss),
+        optimizer=Adam(model.parameters(), lr=2e-3),
         device=device,
-        num_epochs=10,
+        num_epochs=epoch,
     )

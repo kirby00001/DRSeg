@@ -11,7 +11,13 @@ import torch.nn.functional as F
 
 from datasets.IDRiD import get_dataloader_IDRiD
 from models.unetplusplus import get_model_unetplusplus
-from utils import get_transform, get_loss_CE, mauc_coef, dice_coef, iou_coef
+from utils import (
+    get_transform,
+    get_loss,
+    mauc_coef,
+    dice_coef,
+    iou_coef,
+)
 
 from colorama import Fore, Style
 from collections import defaultdict
@@ -154,11 +160,11 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
         ma_auc, he_auc, ex_auc, se_auc, mean_auc, dice, iou = val_scores
         history["Train Loss"].append(train_loss)
         history["Valid Loss"].append(val_loss)
-        history["MA AUC"].append(ma_auc)
-        history["HE AUC"].append(he_auc)
-        history["EX AUC"].append(ex_auc)
-        history["SE AUC"].append(se_auc)
-        history["Mean AUC"].append(mean_auc)
+        history["MA PR AUC"].append(ma_auc)
+        history["HE PR AUC"].append(he_auc)
+        history["EX PR AUC"].append(ex_auc)
+        history["SE PR AUC"].append(se_auc)
+        history["Mean PR AUC"].append(mean_auc)
         history["Valid Dice"].append(dice)
         history["Valid IoU"].append(iou)
 
@@ -167,13 +173,13 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
             {
                 "Train Loss": train_loss,
                 "Valid Loss": val_loss,
-                "MA AUC": ma_auc,
-                "HE AUC": he_auc,
-                "EX AUC": ex_auc,
-                "SE AUC": se_auc,
-                "Mean AUC": mean_auc,
-                "Dice": dice,
-                "IoU": iou,
+                "MA PR AUC": ma_auc,
+                "HE PR AUC": he_auc,
+                "EX PR AUC": ex_auc,
+                "SE PR AUC": se_auc,
+                "Mean PR AUC": mean_auc,
+                "Valid Dice": dice,
+                "Valid IoU": iou,
                 # "LR": scheduler.get_last_lr()[0],
             }
         )
@@ -232,7 +238,7 @@ if __name__ == "__main__":
     )
 
     optimizer = Adam(model.parameters(), lr=2e-3)
-    loss_fn = get_loss_CE()
+    loss_fn = get_loss("FocalLoss")
     device = "cuda"
 
     wandb.login(key="b9b9bfc9d98eada98a991a294a1e40ad81437726")
@@ -242,7 +248,10 @@ if __name__ == "__main__":
         name=f"Dim 960x1440|model U-net++",
         anonymous=anonymous,
         group="U-net++ efficientnet_b0 960x1440",
-        config={"epoch": 10},
+        config={
+            "epoch": 10,
+            "loss": "Focal Loss",
+        },
     )
 
     run_training(

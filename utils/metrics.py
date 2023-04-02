@@ -20,19 +20,12 @@ def mauc_coef(y_true, y_pred):
     for i in range(1, 5):
         auc_list.append(pr_auc(y_true[:, i, :, :], y_pred[:, i, :, :]))
     masked_auc_list = np.ma.masked_equal(auc_list, -1)
-    print(masked_auc_list)
     mauc = np.mean(masked_auc_list)
     return auc_list[0], auc_list[1], auc_list[2], auc_list[3], mauc
 
 
 def dice_coef(y_true, y_pred, dim=(2, 3), epsilon=1e-9):
     y_true = y_true.to(torch.float32)
-    label_pred = y_pred.argmax(dim=1)
-    y_pred = (
-        torch.nn.functional.one_hot(label_pred, num_classes=5)
-        .permute(0, 3, 1, 2)
-        .to(torch.float32)
-    )
     inter = (y_true * y_pred).sum(dim=dim)
     den = y_true.sum(dim=dim) + y_pred.sum(dim=dim)
     dice = ((2 * inter + epsilon) / (den + epsilon)).mean(dim=(1, 0))
@@ -41,12 +34,6 @@ def dice_coef(y_true, y_pred, dim=(2, 3), epsilon=1e-9):
 
 def iou_coef(y_true, y_pred, dim=(2, 3), epsilon=1e-9):
     y_true = y_true.to(torch.float32)
-    label_pred = y_pred.argmax(dim=1)
-    y_pred = (
-        torch.nn.functional.one_hot(label_pred, num_classes=5)
-        .permute(0, 3, 1, 2)
-        .to(torch.float32)
-    )
     inter = (y_true * y_pred).sum(dim=dim)
     union = (y_true + y_pred - y_true * y_pred).sum(dim=dim)
     iou = ((inter + epsilon) / (union + epsilon)).mean(dim=(1, 0))

@@ -84,11 +84,28 @@ def valid_one_epoch(model, dataloader, loss_fn, device):
         epoch_loss = running_loss / dataset_size
 
         y_score = F.softmax(y_pred, dim=1)
+        label_pred = y_score.argmax(dim=1)
+        label_pred = (
+            torch.nn.functional.one_hot(label_pred, num_classes=5)
+            .permute(0, 3, 1, 2)
+            .to(torch.float32)
+        )
+
         ma_auc, he_auc, ex_auc, se_auc, mean_auc = mauc_coef(
             y_true=masks, y_pred=y_score
         )
-        dice = dice_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
-        iou = iou_coef(y_true=masks, y_pred=y_score).cpu().detach().numpy()
+        dice = (
+            dice_coef(y_true=masks[:, 1:, :, :], y_pred=y_score[:, 1:, :, :])
+            .cpu()
+            .detach()
+            .numpy()
+        )
+        iou = (
+            iou_coef(y_true=masks[:, 1:, :, :], y_pred=y_score[:, 1:, :, :])
+            .cpu()
+            .detach()
+            .numpy()
+        )
         val_scores.append([ma_auc, he_auc, ex_auc, se_auc, mean_auc, dice, iou])
 
         mem = torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0
@@ -233,9 +250,9 @@ if __name__ == "__main__":
     encoder_weights = "imagenet"
     num_class = 5
 
-    epoch = 10
+    epoch = 60
     device = "cuda"
-    loss = "Focal Loss"
+    loss = "CrossEntropyLoss"
 
     wandb.login(key=wandb_key)
     run = wandb.init(
@@ -244,6 +261,8 @@ if __name__ == "__main__":
         anonymous=anonymous,
         group="U-net++ efficientnet_b0 960x1440",
         config={
+            "encoder name": encoder_name,
+            "encoder weights": encoder_weights,
             "epoch": epoch,
             "loss": loss,
         },

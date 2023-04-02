@@ -5,7 +5,7 @@ import segmentation_models_pytorch as smp
 def get_loss(mode):
     if mode=="CrossEntropyLoss":
         return CrossEntropyLoss(
-        reduction="mean",
+        reduction="sum",
     )
     elif mode=="FocalLoss":
         return smp.losses.FocalLoss(

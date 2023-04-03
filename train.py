@@ -10,7 +10,7 @@ from torch.optim import Adam
 import torch.nn.functional as F
 
 from datasets.IDRiD import get_dataloader_IDRiD
-from models.unetplusplus import get_model_unetplusplus
+from models import get_model_unetplusplus, get_model_unet
 from utils import get_transform, get_loss, mauc_coef, dice_coef, iou_coef
 
 from colorama import Fore, Style
@@ -212,14 +212,14 @@ def run_training(model, loss_fn, optimizer, device, num_epochs):
                 run.summary["Best IoU"] = best_iou
                 run.summary["Best Epoch"] = best_epoch
             best_model_weights = copy.deepcopy(model.state_dict())
-            PATH = f"./checkpoints/best_epoch.bin"
+            PATH = f"./best_epoch.bin"
             torch.save(model.state_dict(), PATH)
             # Save a model file from the current directory
             wandb.save(PATH)
             print(f"Model Saved{reset}")
 
         last_model_weights = copy.deepcopy(model.state_dict())
-        PATH = f"./checkpoints/last_epoch.bin"
+        PATH = f"./last_epoch.bin"
         torch.save(model.state_dict(), PATH)
 
     end = time.time()
@@ -246,6 +246,7 @@ if __name__ == "__main__":
     wandb_key = "b9b9bfc9d98eada98a991a294a1e40ad81437726"
     anonymous = None
 
+    model = "U-net++"
     encoder_name = "efficientnet-b0"
     encoder_weights = "imagenet"
     num_class = 5
@@ -253,27 +254,36 @@ if __name__ == "__main__":
     epoch = 60
     device = "cuda"
     loss = "CrossEntropyLoss"
+    transforms = "RandomCropResize | RandomFlip"
 
     wandb.login(key=wandb_key)
     run = wandb.init(
         project="DR Segmentation",
-        name=f"Dim 960x1440|model U-net++",
+        name=f"Dim 960x1440 | model {model}",
         anonymous=anonymous,
-        group="U-net++ efficientnet_b0 960x1440",
+        group=f"{model} {encoder_name} 960x1440",
         config={
             "encoder name": encoder_name,
             "encoder weights": encoder_weights,
             "epoch": epoch,
             "loss": loss,
+            "transforms": transforms,
         },
     )
-
-    model = get_model_unetplusplus(
-        encoder_name=encoder_name,
-        encoder_weights=encoder_weights,
-        classes=num_class,
-    )
-
+    
+    if model == "U-net++":
+        model = get_model_unetplusplus(
+            encoder_name=encoder_name,
+            encoder_weights=encoder_weights,
+            classes=num_class,
+        )
+    elif model == "U-net":
+        model = get_model_unet(
+            encoder_name=encoder_name,
+            encoder_weights=encoder_weights,
+            classes=num_class,
+        )
+        
     run_training(
         model=model,
         loss_fn=get_loss(loss),

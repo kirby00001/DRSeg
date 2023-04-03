@@ -2,7 +2,7 @@ from torchinfo import summary
 import segmentation_models_pytorch as smp
 
 
-def get_model_unetplusplus(
+def get_model_unet(
     encoder_name,
     encoder_depth=4,
     encoder_weights="imagenet",
@@ -12,27 +12,20 @@ def get_model_unetplusplus(
     classes=5,
     activation=None,
 ):
-    """_summary_
-
-    Args:
-        encoder_name (_type_): _description_
-        encoder_weights (_type_): _description_
-        classes (_type_): _description_
-    """
-    return smp.UnetPlusPlus(
+    return smp.Unet(
         encoder_name=encoder_name,
-        encoder_weights=encoder_weights,
         encoder_depth=encoder_depth,
-        decoder_channels=decoder_channels,
-        classes=classes,
-        in_channels=in_channels,
+        encoder_weights=encoder_weights,
         decoder_use_batchnorm=decoder_use_batchnorm,  # type: ignore
+        decoder_channels=decoder_channels,
+        in_channels=in_channels,
+        classes=classes,
         activation=activation,
     )
 
 
 if __name__ == "__main__":
-    model = get_model_unetplusplus(
+    model = get_model_unet(
         encoder_name="efficientnet-b0",
         encoder_weights="imagenet",
         classes=5,

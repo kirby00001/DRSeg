@@ -1,7 +1,7 @@
 from torchinfo import summary
 import segmentation_models_pytorch as smp
 
-
+# [240, 144, 96, 32]
 def get_model_unetplusplus(
     encoder_name,
     encoder_depth=4,
@@ -12,13 +12,6 @@ def get_model_unetplusplus(
     classes=5,
     activation=None,
 ):
-    """_summary_
-
-    Args:
-        encoder_name (_type_): _description_
-        encoder_weights (_type_): _description_
-        classes (_type_): _description_
-    """
     return smp.UnetPlusPlus(
         encoder_name=encoder_name,
         encoder_weights=encoder_weights,

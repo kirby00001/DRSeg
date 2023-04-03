@@ -4,8 +4,8 @@ from albumentations.pytorch import ToTensorV2
 transforms = {
     "train": A.Compose(
         [
-            A.RandomResizedCrop(960, 1440, scale=(2000, 2000)),
-            # A.Resize(960, 1440),
+            # A.RandomResizedCrop(960, 1440, scale=(2000, 2000)),
+            A.Resize(960, 1440),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
             ToTensorV2(transpose_mask=True),

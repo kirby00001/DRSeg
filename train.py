@@ -251,7 +251,7 @@ if __name__ == "__main__":
     encoder_weights = "imagenet"
     num_class = 5
 
-    epoch = 60
+    epoch = 100
     device = "cuda"
     loss = "CrossEntropyLoss"
     transforms = "RandomCropResize | RandomFlip"
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     run_training(
         model=model,
         loss_fn=get_loss(loss),
-        optimizer=Adam(model.parameters(), lr=2e-3),
+        optimizer=Adam(model.parameters(), lr=1e-4),
         device=device,
         num_epochs=epoch,
     )
